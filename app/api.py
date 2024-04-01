@@ -160,22 +160,24 @@
 # #         os.makedirs(UPLOAD_DIRECTORY)
 # #     run()
 
-from fastapi import FastAPI, File, UploadFile, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-# from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
+from fastapi import FastAPI
 
 app = FastAPI()
 
 # Dummy firmware version
-firmware_version = "0.0.1"
+firmware_version = "1.0.0"
+
+@app.get('/')
+def home():
+    return {'msg': 'Welcome in my api'}
+
 
 # Mounting static files directory
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Jinja2 templates directory
 # templates = Jinja2Templates(directory="templates")
+
 
 # @app.get("/", response_class=HTMLResponse)
 # async def home(request: Request):
@@ -194,17 +196,17 @@ async def set_firmware_version(version: str):
     return {"message": "Firmware version set successfully", "version": firmware_version}
 
 
-@app.post("/firmware/bin")
-async def upload_bin_file(file: UploadFile = File(...)):
-    # Save the uploaded .bin file
-    with open(file.filename, "wb") as buffer:
-        buffer.write(await file.read())
-    return {"message": "File uploaded successfully"}
+# @app.post("/firmware/bin")
+# async def upload_bin_file(file: UploadFile = File(...)):
+#     # Save the uploaded .bin file
+#     with open(file.filename, "wb") as buffer:
+#         buffer.write(await file.read())
+#     return {"message": "File uploaded successfully"}
 
 
-@app.get("/firmware/bin")
-async def download_bin_file():
-    # You may implement logic here to return the appropriate .bin file
-    # For now, just returning a sample file named "example.bin"
-    file_path = "example.bin"
-    return FileResponse(file_path, media_type="application/octet-stream")
+# @app.get("/firmware/bin")
+# async def download_bin_file():
+#     # You may implement logic here to return the appropriate .bin file
+#     # For now, just returning a sample file named "example.bin"
+#     file_path = "example.bin"
+#     return FileResponse(file_path, media_type="application/octet-stream")
