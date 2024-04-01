@@ -217,12 +217,14 @@
 #     else:
 #         return {"error": "No file has been uploaded yet"}
 
+import boto3
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 
 app = FastAPI()
+s3 = boto3.client('s3')
 
 # Variable to store the last uploaded file name
 last_uploaded_file = None
@@ -272,11 +274,18 @@ async def set_version(version: str):
     firmware_version = version
     return {"message": "Firmware version set successfully", "version": firmware_version}
 
+# @app.post("/upload_file/")
+# async def upload_file(file: UploadFile = File(...)):
+#     global last_uploaded_file
+#     with open(file.filename, "wb") as buffer:
+#         buffer.write(file.file.read())
+#     last_uploaded_file = file.filename
+#     return {"filename": file.filename}
+
 @app.post("/upload_file/")
-async def upload_file(file: UploadFile = File(...)):
-    global last_uploaded_file
-    with open(file.filename, "wb") as buffer:
-        buffer.write(file.file.read())
+async def create_upload_file(file: UploadFile = File(...)):
+    # Upload file to S3
+    s3.upload_fileobj(file.file, 'your-bucket-name', file.filename)
     last_uploaded_file = file.filename
     return {"filename": file.filename}
 
