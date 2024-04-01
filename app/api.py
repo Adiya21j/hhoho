@@ -278,6 +278,7 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file.filename, "wb") as buffer:
         buffer.write(file.file.read())
     last_uploaded_file = file.filename
+    last_uploaded_file = "blynk.bin"
     return {"filename": file.filename}
 
 @app.get("/get_file/")
