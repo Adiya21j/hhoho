@@ -166,4 +166,4 @@ app = FastAPI()
 
 @app.get('/')
 def home():
-    return {'msg': 'Welcome in my api, Loviya'}
+    return {'msg': 'Welcome in my api'}

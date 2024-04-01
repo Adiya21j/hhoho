@@ -5,7 +5,7 @@ import requests
 
 load_dotenv()
 
-PORT = int(os.get('PORT', 8000))
+PORT = 8000
 HOST = '0.0.0.0'
 
 if __name__ == '__main__':
