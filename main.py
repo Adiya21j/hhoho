@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 import uvicorn
+import requests
 
 load_dotenv()
 
