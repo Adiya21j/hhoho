@@ -220,6 +220,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 app = FastAPI()
 
@@ -250,7 +251,7 @@ upload_form_html = """
     </form>
 
     <h2>Download last uploaded file</h2>
-    <form action="/get_last_uploaded_file/" method="get">
+    <form action="/get_file/" method="get">
         <input type="submit" value="Download Last Uploaded File">
     </form>
 </body>
@@ -262,25 +263,25 @@ async def home():
     return upload_form_html.format(firmware_version=firmware_version, total_files_downloaded=total_files_downloaded)
 
 @app.get("/get_version/")
-async def get_firmware_version():
+async def get_version():
     return {"version": firmware_version}
 
-@app.post("/set_version/")
-async def set_firmware_version(version: str):
+@app.get("/set_version/")
+async def set_version(version: str):
     global firmware_version
     firmware_version = version
     return {"message": "Firmware version set successfully", "version": firmware_version}
 
 @app.post("/upload_file/")
-async def create_upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...)):
     global last_uploaded_file
     with open(file.filename, "wb") as buffer:
         buffer.write(file.file.read())
     last_uploaded_file = file.filename
     return {"filename": file.filename}
 
-@app.get("/get_last_uploaded_file/")
-async def get_last_uploaded_file():
+@app.get("/get_file/")
+async def get_file():
     global last_uploaded_file, total_files_downloaded
     if last_uploaded_file:
         total_files_downloaded += 1
