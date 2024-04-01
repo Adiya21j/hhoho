@@ -159,49 +159,131 @@
 # #     if not os.path.exists(UPLOAD_DIRECTORY):
 # #         os.makedirs(UPLOAD_DIRECTORY)
 # #     run()
+# from fastapi import FastAPI, File, UploadFile
+# from fastapi.responses import HTMLResponse
 
-from fastapi import FastAPI, File, UploadFile, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-# from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
+# app = FastAPI()
+
+# # Variable to store the last uploaded file name
+# last_uploaded_file = None
+
+# # Dummy firmware version
+# firmware_version = "0.0.1"
+
+# # HTML form for file upload
+# upload_form_html = """
+# <!DOCTYPE html>
+# <html>
+# <head>
+#     <title>File Upload Form</title>
+# </head>
+# <body>
+#     <h2>Upload a .bin file</h2>
+#     <form action="/uploadfile/" method="post" enctype="multipart/form-data">
+#         <input type="file" name="file"><br><br>
+#         <input type="submit" value="Upload">
+#     </form>
+# </body>
+# </html>
+# """
+
+# @app.get("/", response_class=HTMLResponse)
+# async def home():
+#     return upload_form_html
+
+# @app.post("/uploadfile/")
+# async def create_upload_file(file: UploadFile = File(...)):
+#     global last_uploaded_file
+#     with open(file.filename, "wb") as buffer:
+#         buffer.write(file.file.read())
+#     last_uploaded_file = file.filename
+#     return {"filename": file.filename}
+
+# @app.get("/firmware/version")
+# async def get_firmware_version():
+#     return {"version": firmware_version}
+
+# @app.post("/firmware/version")
+# async def set_firmware_version(version: str):
+#     global firmware_version
+#     firmware_version = version
+#     return {"message": "Firmware version set successfully", "version": firmware_version}
+
+# @app.get("/downloadfile/")
+# async def download_file():
+#     global last_uploaded_file
+#     if last_uploaded_file:
+#         return FileResponse(path=last_uploaded_file, media_type='application/octet-stream', filename=last_uploaded_file)
+#     else:
+#         return {"error": "No file has been uploaded yet"}
+
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Dummy firmware version
+# Variable to store the last uploaded file name
+last_uploaded_file = None
+# Variable to store the firmware version
 firmware_version = "0.0.1"
+# Variable to track total files downloaded
+total_files_downloaded = 0
 
-@app.get('/')
-def home():
-    return {'msg': 'Welcome in firmware api'}
+# HTML form for file upload and firmware manipulation
+upload_form_html = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload Form</title>
+</head>
+<body>
+    <h2>Current Firmware Version</h2>
+    <p>{firmware_version}</p>
+    <h2>Total Files Downloaded</h2>
+    <p>{total_files_downloaded}</p>
 
-#Mounting static files directory
-app.mount("/static", StaticFiles(directory="static"), name="static")
+    <h2>Upload firmware.bin file</h2>
+    <form action="/upload_file/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file"><br><br>
+        <input type="submit" value="Upload">
+    </form>
 
+    <h2>Download last uploaded file</h2>
+    <form action="/get_last_uploaded_file/" method="get">
+        <input type="submit" value="Download Last Uploaded File">
+    </form>
+</body>
+</html>
+"""
 
-@app.get("/firmware/version")
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    return upload_form_html.format(firmware_version=firmware_version, total_files_downloaded=total_files_downloaded)
+
+@app.get("/get_version/")
 async def get_firmware_version():
     return {"version": firmware_version}
 
-
-@app.post("/firmware/version")
+@app.post("/set_version/")
 async def set_firmware_version(version: str):
     global firmware_version
     firmware_version = version
     return {"message": "Firmware version set successfully", "version": firmware_version}
 
-
-@app.post("/firmware/bin")
-async def upload_bin_file(file: UploadFile = File(...)):
-    # Save the uploaded .bin file
+@app.post("/upload_file/")
+async def create_upload_file(file: UploadFile = File(...)):
+    global last_uploaded_file
     with open(file.filename, "wb") as buffer:
-        buffer.write(await file.read())
-    return {"message": "File uploaded successfully"}
+        buffer.write(file.file.read())
+    last_uploaded_file = file.filename
+    return {"filename": file.filename}
 
-
-@app.get("/firmware/bin")
-async def download_bin_file():
-    # You may implement logic here to return the appropriate .bin file
-    # For now, just returning a sample file named "example.bin"
-    file_path = "example.bin"
-    return FileResponse(file_path, media_type="application/octet-stream")
+@app.get("/get_last_uploaded_file/")
+async def get_last_uploaded_file():
+    global last_uploaded_file, total_files_downloaded
+    if last_uploaded_file:
+        total_files_downloaded += 1
+        return FileResponse(path=last_uploaded_file, media_type='application/octet-stream', filename=last_uploaded_file)
+    else:
+        return {"error": "No file has been uploaded yet"}
