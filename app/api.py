@@ -278,14 +278,15 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file.filename, "wb") as buffer:
         buffer.write(file.file.read())
     last_uploaded_file = file.filename
-    last_uploaded_file = "blynk.bin"
     return {"filename": file.filename}
 
 @app.get("/get_file/")
 async def get_file():
     global last_uploaded_file, total_files_downloaded
+
     if last_uploaded_file:
         total_files_downloaded += 1
         return FileResponse(path=last_uploaded_file, media_type='application/octet-stream', filename=last_uploaded_file)
     else:
-        return {"error": "No file has been uploaded yet"}
+        total_files_downloaded += 1
+        return FileResponse(path="blynk.bin", media_type='application/octet-stream', filename="blynk.bin")
