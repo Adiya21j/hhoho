@@ -100,7 +100,7 @@ upload_form_html = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>File Upload Form</title>
+    <title>Firmware Upload Form</title>
     <style>
         body {{
             font-family: Arial, sans-serif;
