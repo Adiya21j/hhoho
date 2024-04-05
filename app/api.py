@@ -170,6 +170,10 @@ async def home():
 async def get_version():
     return {"version": firmware_version}
 
+@app.get("/get_size/")
+async def get_version():
+    return {"Content-Length": str(os.path.getsize("blynk.bin"))}
+
 @app.get("/set_version/")
 async def set_version(version: str):
     global firmware_version
