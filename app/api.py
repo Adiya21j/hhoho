@@ -83,6 +83,7 @@
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse
+import os
 
 app = FastAPI()
 
@@ -100,7 +101,7 @@ upload_form_html = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>File Upload Form</title>
+    <title>Firmware Upload Form</title>
     <style>
         body {{
             font-family: Arial, sans-serif;
@@ -190,8 +191,17 @@ async def get_file():
     global last_uploaded_file, total_files_downloaded, uploaded
     if uploaded:
         total_files_downloaded += 1
-        return FileResponse(path=last_uploaded_file, media_type='application/octet-stream', filename=last_uploaded_file)
+        headers = {
+            "Content-Length": str(os.path.getsize(last_uploaded_file)),
+            "Content-Disposition": f'attachment; filename={last_uploaded_file}'
+        }
+        return FileResponse(path=last_uploaded_file, media_type='application/octet-stream', filename=last_uploaded_file, headers=headers)
     elif (uploaded==None):
         total_files_downloaded += 1
-        return FileResponse(path="blynk.bin", media_type='application/octet-stream', filename="blynk.bin")
+        headers = {
+            "Content-Length": str(os.path.getsize("blynk.bin")),
+            "Content-Disposition": f'attachment; filename={"blynk.bin"}'
+        }
+        print("FILE SIZE: "+headers["Content-Length"])
+        return FileResponse(path="blynk.bin", media_type='application/octet-stream', filename="blynk.bin", headers=headers)
         # return {"message": "No FIle"}
